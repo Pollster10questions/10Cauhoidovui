@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đố Vui Cho Bé</title>
+    <!-- Thư viện Tailwind CSS để tạo giao diện nhanh chóng và đẹp mắt -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Thư viện Font Awesome để sử dụng các biểu tượng -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Sử dụng font chữ dễ đọc cho trẻ em */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Màu nền nhẹ nhàng */
+        }
+        /* Hiệu ứng chuyển động mượt mà cho các phần tử */
+        .transition-all {
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 0.3s;
+        }
+        /* Hiệu ứng bóng đổ và màu sắc cho các nút trả lời */
+        .answer-option {
+            background-color: #ffffff;
+            border: 2px solid #e2e8f0;
+        }
+        .answer-option:hover:not(.disabled) {
+            background-color: #f7fafc;
+            transform: translateY(-2px);
+            border-color: #cbd5e0;
+        }
+        .correct {
+            background-color: #d1fae5; /* Màu xanh lá nhạt cho đáp án đúng */
+            border-color: #34d399; /* Màu viền xanh lá đậm */
+        }
+        .incorrect {
+            background-color: #fee2e2; /* Màu đỏ nhạt cho đáp án sai */
+            border-color: #ef4444; /* Màu viền đỏ đậm */
+        }
+        /* Hiệu ứng cho nút */
+        .btn-primary {
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            font-weight: bold;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- Container chính của bài quiz -->
+    <div class="bg-white p-8 rounded-3xl shadow-xl max-w-lg w-full">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Đố Vui Cho Bé</h1>
+        
+        <!-- Khu vực hiển thị câu hỏi và các lựa chọn -->
+        <div id="quiz-container">
+            <!-- Nội dung sẽ được thêm bằng JavaScript -->
+        </div>
+        
+        <!-- Khu vực hiển thị kết quả -->
+        <div id="result-container" class="hidden text-center">
+            <!-- Nội dung sẽ được thêm bằng JavaScript -->
+        </div>
+
+    </div>
+
+    <script>
+        // Dữ liệu câu hỏi được lấy từ immersive trước đó và chuyển thành đối tượng JavaScript
+        const quizData = [
+            {
+                question: "Con vật nào có đôi tai dài và hay nhảy nhót?",
+                hint: "Con vật này rất thích ăn cà rốt.",
+                answerOptions: [
+                    { text: "Con thỏ", isCorrect: true },
+                    { text: "Con mèo", isCorrect: false },
+                    { text: "Con hươu cao cổ", isCorrect: false },
+                    { text: "Con chó", isCorrect: false }
+                ]
+            },
+            {
+                question: "Cái gì có nhiều màu sắc và xuất hiện sau cơn mưa?",
+                hint: "Nó có hình vòng cung trên bầu trời.",
+                answerOptions: [
+                    { text: "Mặt trời", isCorrect: false },
+                    { text: "Cầu vồng", isCorrect: true },
+                    { text: "Mặt trăng", isCorrect: false },
+                    { text: "Ngôi sao", isCorrect: false }
+                ]
+            },
+            {
+                question: "Con vật nào vừa biết bay, vừa biết nói, và rất thích đậu trên vai cướp biển?",
+                hint: "Lông của nó thường có rất nhiều màu sắc sặc sỡ.",
+                answerOptions: [
+                    { text: "Con vẹt", isCorrect: true },
+                    { text: "Con chim sẻ", isCorrect: false },
+                    { text: "Con đại bàng", isCorrect: false },
+                    { text: "Con cú", isCorrect: false }
+                ]
+            },
+            {
+                question: "Cái gì có đèn màu đỏ và xanh lá, giúp chúng ta qua đường an toàn?",
+                hint: "Khi đèn chuyển sang màu đỏ, tất cả các xe phải dừng lại.",
+                answerOptions: [
+                    { text: "Đèn pin", isCorrect: false },
+                    { text: "Đèn ngủ", isCorrect: false },
+                    { text: "Đèn giao thông", isCorrect: true },
+                    { text: "Đèn trang trí", isCorrect: false }
+                ]
+            },
+            {
+                question: "Con vật nào có nhiều xúc tu và sống ở dưới biển?",
+                hint: "Nó có thể phun mực để tự vệ.",
+                answerOptions: [
+                    { text: "Con cá", isCorrect: false },
+                    { text: "Con rùa biển", isCorrect: false },
+                    { text: "Con cua", isCorrect: false },
+                    { text: "Con bạch tuộc", isCorrect: true }
+                ]
+            },
+            {
+                question: "Loại quả nào nhỏ, có màu đỏ và có nhiều chấm nhỏ màu vàng ở bên ngoài?",
+                hint: "Nó thường được dùng để làm mứt hoặc trang trí bánh kem.",
+                answerOptions: [
+                    { text: "Quả dâu tây", isCorrect: true },
+                    { text: "Quả chuối", isCorrect: false },
+                    { text: "Quả cam", isCorrect: false },
+                    { text: "Quả táo", isCorrect: false }
+                ]
+            },
+            {
+                question: "Cái gì toả sáng trên trời vào ban ngày và mang lại ánh sáng ấm áp?",
+                hint: "Không nên nhìn thẳng vào nó vì sẽ bị chói mắt.",
+                answerOptions: [
+                    { text: "Mặt trăng", isCorrect: false },
+                    { text: "Mặt trời", isCorrect: true },
+                    { text: "Ngọn đèn", isCorrect: false },
+                    { text: "Đám mây", isCorrect: false }
+                ]
+            },
+            {
+                question: "Con vật nào to lớn, có vòi dài và sống ở châu Phi hoặc châu Á?",
+                hint: "Nó dùng cái vòi để uống nước và nhặt đồ vật.",
+                answerOptions: [
+                    { text: "Con hổ", isCorrect: false },
+                    { text: "Con sư tử", isCorrect: false },
+                    { text: "Con voi", isCorrect: true },
+                    { text: "Con hà mã", isCorrect: false }
+                ]
+            },
+            {
+                question: "Phương tiện nào có hai bánh và chúng ta cần đạp để nó di chuyển?",
+                hint: "Khi đi xe này, chúng ta nên đội mũ bảo hiểm để bảo vệ đầu.",
+                answerOptions: [
+                    { text: "Xe máy", isCorrect: false },
+                    { text: "Ô tô", isCorrect: false },
+                    { text: "Ván trượt", isCorrect: false },
+                    { text: "Xe đạp", isCorrect: true }
+                ]
+            },
+            {
+                question: "Cái gì ngọt ngào, thường được ăn vào dịp sinh nhật và có nến cắm ở trên?",
+                hint: "Chúng ta thường hát một bài hát vui vẻ trước khi thổi nến và cắt nó.",
+                answerOptions: [
+                    { text: "Bánh sinh nhật", isCorrect: true },
+                    { text: "Kẹo", isCorrect: false },
+                    { text: "Kem", isCorrect: false },
+                    { text: "Bánh mì", isCorrect: false }
+                ]
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let playCount = 0; // Biến mới để đếm số lần chơi
+        let quizContainer = document.getElementById('quiz-container');
+        let resultContainer = document.getElementById('result-container');
+        let shuffledQuestions = [];
+
+        // Hàm bắt đầu bài quiz
+        function startQuiz() {
+            // Tăng số lần chơi mỗi khi bắt đầu một ván mới
+            playCount++;
+            // Xáo trộn thứ tự các câu hỏi để mỗi lần chơi là một trải nghiệm mới
+            shuffledQuestions = [...quizData].sort(() => Math.random() - 0.5);
+            currentQuestionIndex = 0;
+            score = 0;
+            quizContainer.style.display = 'block';
+            resultContainer.style.display = 'none';
+            showQuestion();
+        }
+
+        // Hàm hiển thị câu hỏi
+        function showQuestion() {
+            const currentQuestion = shuffledQuestions[currentQuestionIndex];
+            
+            // Xáo trộn các lựa chọn trả lời
+            const shuffledOptions = [...currentQuestion.answerOptions].sort(() => Math.random() - 0.5);
+
+            quizContainer.innerHTML = `
+                <div class="mb-6">
+                    <p class="text-lg font-semibold text-gray-700 mb-2">Câu hỏi ${currentQuestionIndex + 1}/${shuffledQuestions.length}</p>
+                    <p class="text-xl font-bold text-gray-900 mb-4">${currentQuestion.question}</p>
+                    <p class="text-sm italic text-gray-500"><i class="fas fa-lightbulb mr-2"></i>Gợi ý: ${currentQuestion.hint}</p>
+                </div>
+                <div class="space-y-4">
+                    ${shuffledOptions.map(option => `
+                        <button class="answer-option w-full text-left p-4 rounded-xl shadow-sm hover:shadow-md transition-all text-gray-800 disabled:opacity-75" 
+                                onclick="checkAnswer(this)"
+                                data-is-correct="${option.isCorrect}">
+                            ${option.text}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Hàm kiểm tra đáp án
+        function checkAnswer(selectedButton) {
+            // Vô hiệu hóa tất cả các nút sau khi người dùng trả lời
+            const allButtons = quizContainer.querySelectorAll('.answer-option');
+            allButtons.forEach(button => {
+                button.disabled = true;
+                button.classList.add('disabled');
+            });
+
+            // Kiểm tra đáp án
+            const isCorrect = selectedButton.dataset.isCorrect === 'true';
+
+            if (isCorrect) {
+                selectedButton.classList.add('correct');
+                score++;
+            } else {
+                selectedButton.classList.add('incorrect');
+            }
+
+            // Tìm và highlight đáp án đúng
+            const correctButton = quizContainer.querySelector('[data-is-correct="true"]');
+            if (correctButton) {
+                correctButton.classList.add('correct');
+            }
+
+            // Tự động chuyển sang câu hỏi tiếp theo sau 1 giây
+            setTimeout(() => {
+                nextQuestion();
+            }, 1000);
+        }
+
+        // Hàm chuyển sang câu hỏi tiếp theo
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < shuffledQuestions.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // Hàm hiển thị kết quả cuối cùng
+        function showResults() {
+            quizContainer.style.display = 'none';
+            resultContainer.style.display = 'block';
+            resultContainer.innerHTML = `
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Kết thúc!</h2>
+                <p class="text-lg text-gray-600 mb-6">Con đã trả lời đúng ${score} trên tổng số ${shuffledQuestions.length} câu hỏi. Rất giỏi!</p>
+                <p class="text-sm text-gray-500 mb-6">Tổng số lần chơi: ${playCount}</p>
+                <button onclick="startQuiz()" class="btn-primary">Làm lại</button>
+            `;
+        }
+
+        // Bắt đầu quiz khi trang tải xong
+        startQuiz();
+    </script>
+</body>
+</html>
